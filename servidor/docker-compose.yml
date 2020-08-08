@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  clontagram-db:
+    image: mongo
+    ports:
+      - '27017:27017'
+    expose:
+      - '27017'
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - my_net
+  clontagram-api:
+    build: .
+    depends_on:
+      - clontagram-db
+    environment:
+      WAIT_HOSTS: clontagram-db:27017
+      MONGODB_URI: mongodb://clontagram-db:27017/clontagram
+      NODE_ENV: development
+      PORT: 3000
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/opt/app
+      - /opt/app/node_modules
+    networks:
+      - my_net
+volumes:
+  mongodata:
+networks:
+  my_net:
