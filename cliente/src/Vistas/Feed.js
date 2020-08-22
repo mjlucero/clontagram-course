@@ -14,7 +14,7 @@ async function cargarPosts(fechaUltimoPost) {
 	return nuevosPosts;
 }
 
-export default function Feed({ mostrarError }) {
+export default function Feed({ mostrarError, usuario }) {
 	const [posts, setPosts] = useState([]);
 	const [cargandoPostsIniciales, setCargandoPostsIniciales] = useState(true);
 
@@ -31,6 +31,20 @@ export default function Feed({ mostrarError }) {
 
 		cargarPostsIniciales();
 	}, []);
+
+	function actualizarPost(postOriginal, postActualizado) {
+		setPosts(posts => {
+			const postActualizados = posts.map(post => {
+				if (post !== postOriginal) {
+					return post;
+				}
+
+				return postActualizado;
+			});
+
+			return postActualizados;
+		});
+	}
 
 	if (cargandoPostsIniciales) {
 		return (
@@ -52,7 +66,7 @@ export default function Feed({ mostrarError }) {
 		<Main center>
 			<div className="Feed">
 				{posts.map(post => (
-					<Post key={post._id} post={post} />
+					<Post key={post._id} post={post} actualizarPost={actualizarPost} mostrarError={mostrarError} usuario={usuario} />
 				))}
 			</div>
 		</Main>

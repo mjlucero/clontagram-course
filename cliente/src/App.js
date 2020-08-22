@@ -82,16 +82,16 @@ export default function App() {
 		<Router>
 			<Nav usuario={usuario} />
 			<Error mensaje={error} esconderError={esconderError} />
-			{usuario ? <LoginRoutes mostrarError={mostrarError} /> : <LogoutRoutes login={login} signup={signup} mostrarError={mostrarError} />}
+			{usuario ? <LoginRoutes mostrarError={mostrarError} usuario={usuario} /> : <LogoutRoutes login={login} signup={signup} mostrarError={mostrarError} />}
 		</Router>
 	);
 }
 
-function LoginRoutes({ mostrarError }) {
+function LoginRoutes({ mostrarError, usuario }) {
 	return (
 		<Switch>
 			<Route path="/upload" render={props => <Upload {...props} mostrarError={mostrarError} />} />
-			<Route path="/" render={props => <Feed {...props} mostrarError={mostrarError} />} default />
+			<Route path="/" render={props => <Feed {...props} mostrarError={mostrarError} usuario={usuario} />} default />
 		</Switch>
 	);
 }
