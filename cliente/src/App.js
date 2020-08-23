@@ -1,106 +1,146 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import Axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import Axios from "axios";
 
-import { setToken, deleteToken, getToken, initAxiosInterceptors } from './Helpers/auth-helper';
+import {
+  setToken,
+  deleteToken,
+  getToken,
+  initAxiosInterceptors,
+} from "./Helpers/auth-helper";
 
-import Nav from './Componentes/Nav';
-import Signup from './Vistas/Signup';
-import Login from './Vistas/Login';
-import Main from './Componentes/Main';
-import Loading from './Componentes/Loading';
-import Error from './Componentes/Error';
-import Upload from './Vistas/Upload';
-import Feed from './Vistas/Feed';
+import Nav from "./Componentes/Nav";
+import Signup from "./Vistas/Signup";
+import Login from "./Vistas/Login";
+import Main from "./Componentes/Main";
+import Loading from "./Componentes/Loading";
+import Error from "./Componentes/Error";
+import Upload from "./Vistas/Upload";
+import Feed from "./Vistas/Feed";
+import PostVista from "./Vistas/Post";
 
 initAxiosInterceptors();
 
 export default function App() {
-	const [usuario, setUsuario] = useState(null);
-	const [cargandoUsuario, setCargandoUsuario] = useState(true);
-	const [error, setError] = useState(null);
+  const [usuario, setUsuario] = useState(null);
+  const [cargandoUsuario, setCargandoUsuario] = useState(true);
+  const [error, setError] = useState(null);
 
-	useEffect(() => {
-		async function cargarUsuario() {
-			if (!getToken()) {
-				setCargandoUsuario(false);
-				return;
-			}
+  useEffect(() => {
+    async function cargarUsuario() {
+      if (!getToken()) {
+        setCargandoUsuario(false);
+        return;
+      }
 
-			try {
-				const { data: usuario } = await Axios.get('/api/usuarios/whoami');
-				setUsuario(usuario);
-				setCargandoUsuario(false);
-			} catch (error) {
-				console.log(error);
-			}
-		}
+      try {
+        const { data: usuario } = await Axios.get("/api/usuarios/whoami");
+        setUsuario(usuario);
+        setCargandoUsuario(false);
+      } catch (error) {
+        console.log(error);
+      }
+    }
 
-		cargarUsuario();
-	}, []);
+    cargarUsuario();
+  }, []);
 
-	async function login(email, password) {
-		const { data } = await Axios.post('/api/usuarios/login', { email, password });
+  async function login(email, password) {
+    const { data } = await Axios.post("/api/usuarios/login", {
+      email,
+      password,
+    });
 
-		setUsuario(data.usuario);
-		setToken(data.token);
-	}
+    setUsuario(data.usuario);
+    setToken(data.token);
+  }
 
-	async function signup(usuario) {
-		const { data } = await Axios.post('/api/usuarios/signup', usuario);
+  async function signup(usuario) {
+    const { data } = await Axios.post("/api/usuarios/signup", usuario);
 
-		setUsuario(data.usuario);
-		setToken(data.token);
-	}
+    setUsuario(data.usuario);
+    setToken(data.token);
+  }
 
-	function logout() {
-		setUsuario(null);
-		deleteToken();
-	}
+  function logout() {
+    setUsuario(null);
+    deleteToken();
+  }
 
-	function mostrarError(mensaje) {
-		if (mensaje && mensaje.message) {
-			setError(mensaje.message);
-		} else {
-			setError(mensaje);
-		}
-	}
+  function mostrarError(mensaje) {
+    if (mensaje && mensaje.message) {
+      setError(mensaje.message);
+    } else {
+      setError(mensaje);
+    }
+  }
 
-	function esconderError() {
-		setError(null);
-	}
+  function esconderError() {
+    setError(null);
+  }
 
-	if (cargandoUsuario) {
-		return (
-			<Main center>
-				<Loading />
-			</Main>
-		);
-	}
+  if (cargandoUsuario) {
+    return (
+      <Main center>
+        <Loading />
+      </Main>
+    );
+  }
 
-	return (
-		<Router>
-			<Nav usuario={usuario} />
-			<Error mensaje={error} esconderError={esconderError} />
-			{usuario ? <LoginRoutes mostrarError={mostrarError} usuario={usuario} /> : <LogoutRoutes login={login} signup={signup} mostrarError={mostrarError} />}
-		</Router>
-	);
+  return (
+    <Router>
+      <Nav usuario={usuario} />
+      <Error mensaje={error} esconderError={esconderError} />
+      {usuario ? (
+        <LoginRoutes mostrarError={mostrarError} usuario={usuario} />
+      ) : (
+        <LogoutRoutes
+          login={login}
+          signup={signup}
+          mostrarError={mostrarError}
+        />
+      )}
+    </Router>
+  );
 }
 
 function LoginRoutes({ mostrarError, usuario }) {
-	return (
-		<Switch>
-			<Route path="/upload" render={props => <Upload {...props} mostrarError={mostrarError} />} />
-			<Route path="/" render={props => <Feed {...props} mostrarError={mostrarError} usuario={usuario} />} default />
-		</Switch>
-	);
+  return (
+    <Switch>
+      <Route
+        path="/upload"
+        render={(props) => <Upload {...props} mostrarError={mostrarError} />}
+      />
+      <Route
+        path="/post/:id"
+        render={(props) => <PostVista {...props} mostrarError={mostrarError} />}
+      />
+      <Route
+        path="/"
+        render={(props) => (
+          <Feed {...props} mostrarError={mostrarError} usuario={usuario} />
+        )}
+        default
+      />
+    </Switch>
+  );
 }
 
 function LogoutRoutes({ login, signup, mostrarError }) {
-	return (
-		<Switch>
-			<Route path="/login/" render={props => <Login {...props} login={login} mostrarError={mostrarError} />} />
-			<Route render={props => <Signup {...props} signup={signup} mostrarError={mostrarError} />} default />
-		</Switch>
-	);
+  return (
+    <Switch>
+      <Route
+        path="/login/"
+        render={(props) => (
+          <Login {...props} login={login} mostrarError={mostrarError} />
+        )}
+      />
+      <Route
+        render={(props) => (
+          <Signup {...props} signup={signup} mostrarError={mostrarError} />
+        )}
+        default
+      />
+    </Switch>
+  );
 }
